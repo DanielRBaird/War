@@ -9,6 +9,10 @@
 import Foundation
 
 class War {
+    // This indicates if we are going to put the cards on the bottom of the users
+    // stack in a predictable order or not.
+    var randomizeBottomPlacement: Bool
+    
     var noWinAtNum = 100_000
     var gameStats = [(win:Int, rounds:Int)]()
     
@@ -21,7 +25,8 @@ class War {
     var playerOneHand: Deck!
     var playerTwoHand: Deck!
     
-    init(verbose: Bool = false) {
+    init(verbose: Bool = false, randomizeBottomPlacement: Bool = true) {
+        self.randomizeBottomPlacement = randomizeBottomPlacement
         self.verbose = verbose
         deal()
     }
@@ -105,17 +110,18 @@ class War {
         
         lootPileMutable.append(playerOneCard)
         lootPileMutable.append(playerTwoCard)
-        
+    
         // There are 3 possibilities.
         // 1. Player one takes it.
         // 2. Player two takes it.
         // 3. War
         let comparisonResult = compare(playerOneCard, playerTwoCard)
         
-        if (comparisonResult > 0) {
-            playerOneHand.addToBottom(lootPileMutable)
-        } else if (comparisonResult < 0) {
-            playerTwoHand.addToBottom(lootPileMutable)
+        if comparisonResult != 0 {
+            
+            if randomizeBottomPlacement { lootPileMutable.shuffle() }
+            
+            (comparisonResult > 0 ? playerOneHand : playerTwoHand)?.addToBottom(lootPileMutable)
         } else {
             // WAR!
             resolveWar(lootPile: lootPileMutable)
@@ -138,6 +144,9 @@ class War {
         // Each player flips one card over that is not used to determine the win.
         lootPileMutable.append(playerOneHand.drawFromTop()!)
         lootPileMutable.append(playerTwoHand.drawFromTop()!)
+        
+        // Because we are drawing a card, we are going to count this as an extra round.
+        rounds += 1;
         
         // The next card is essentially a normal play, just taking the loot pile along.
         drawTopAndCompare(lootPile: lootPileMutable)
@@ -182,4 +191,74 @@ class War {
                 return 2
         }
     }
+    
+    func createCSVAveragedRoundCount(_ roundsArray:[Int], dataPoints: Int = 1) -> Void {
+        if dataPoints < 1 || dataPoints > roundsArray.count { return }
+        
+        var mutableRoundsArray = roundsArray
+        let bucketSize = mutableRoundsArray.count / dataPoints
+        
+        // Sort so that we average sorted data.
+        mutableRoundsArray.sort()
+
+        var bucketedRounds = [Int]()
+        var bucketTotal = 0
+        var bucketCount = 0
+        for rounds in mutableRoundsArray {
+            bucketCount += 1
+            bucketTotal += rounds
+            
+            if bucketCount == bucketSize {
+                // The bucket is full. Average, and empty.
+                bucketedRounds.append(bucketTotal / bucketSize)
+                bucketCount = 0
+                bucketTotal = 0
+            }
+        }
+        
+        // Now bucketedRounds contains our data.
+        let fileName = "rounds.csv"
+        let path = NSURL(fileURLWithPath: NSHomeDirectory()).appendingPathComponent(fileName)
+        var csvText = "round\n"
+        
+        for rounds in bucketedRounds {
+            let newLine = "\(rounds)\n"
+            csvText.append(newLine)
+        }
+        
+        do {
+            try csvText.write(to: path!, atomically: true, encoding: String.Encoding.utf8)
+        } catch {
+            print("Failed to create file")
+            print("\(error)")
+        }
+        
+        if path != nil {
+            print("Saved stats at path: \(path!)")
+        }
+    }
+    
+    func createCSV(_ stats:[(win:Int, rounds:Int)]) -> Void {
+        
+        let fileName = "stats.csv"
+        let path = NSURL(fileURLWithPath: NSHomeDirectory()).appendingPathComponent(fileName)
+        var csvText = "win,round\n"
+        
+        for stat in stats {
+            let newLine = "\(stat.win),\(stat.rounds)\n"
+            csvText.append(newLine)
+        }
+        
+        do {
+            try csvText.write(to: path!, atomically: true, encoding: String.Encoding.utf8)
+        } catch {
+            print("Failed to create file")
+            print("\(error)")
+        }
+        
+        if path != nil {
+            print("Saved stats at path: \(path!)")
+        }
+    }
+
 }
