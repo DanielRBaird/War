@@ -11,7 +11,7 @@ import Foundation
 print("War!")
 
 var war = War(verbose: false, randomizeBottomPlacement: true)
-war.play(games: 1_000_000)
+war.play(games: 10_000)
 
 var player1WinCount = 0
 var player2WinCount = 0
@@ -28,8 +28,6 @@ for gameStats in war.gameStats {
     }
     if gameStats.win == 1 { player1WinCount += 1 }
     if gameStats.win == 2 { player2WinCount += 1 }
-    
-    //print(gameStats)
 }
 
 var gamesExitedForBeingTooLong = war.gameStats.count - (player1WinCount + player2WinCount)
@@ -40,5 +38,7 @@ print("\(gamesExitedForBeingTooLong) games where exited because they took too lo
 print("The averge number of turns to complete a round (not counting incomplete rounds) is: \(averageNumberOfTurns)")
 print("The longest game was \(longestGame) rounds.")
 print("The shortest game was \(shortestGame) rounds")
+
+// Uncomment if you want to produce some csv files with all the fun data.
 //war.createCSVAveragedRoundCount(war.gameStats.map({ $0.rounds }), dataPoints: 20)
 //war.createCSV(war.gameStats)
