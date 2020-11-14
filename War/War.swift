@@ -117,6 +117,14 @@ class War {
         // 3. War
         let comparisonResult = compare(playerOneCard, playerTwoCard)
         
+        if verbose {
+            var symbol = "="
+            if comparisonResult == 1 { symbol = ">" }
+            if comparisonResult == -1 { symbol = "<" }
+            
+            print("\(playerOneCard) " + symbol + " \(playerTwoCard)")
+        }
+        
         if comparisonResult != 0 {
             
             if randomizeBottomPlacement { lootPileMutable.shuffle() }

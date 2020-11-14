@@ -49,8 +49,8 @@
             timestampString = "575154718.311357"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "134"
-            endingLineNumber = "134"
+            startingLineNumber = "142"
+            endingLineNumber = "142"
             landmarkName = "resolveWar(lootPile:)"
             landmarkType = "7">
          </BreakpointContent>
